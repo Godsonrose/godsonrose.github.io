@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RevOps Signal Engine — Built for Hopper</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --sky:#29B6F6;
+  --sky-light:#E1F5FE;
+  --sky-dark:#0288D1;
+  --coral:#FF6B47;
+  --coral-light:#FFF0ED;
+  --green:#10B981;
+  --green-light:#D1FAE5;
+  --amber:#F59E0B;
+  --amber-light:#FEF3C7;
+  --red:#EF4444;
+  --red-light:#FEE2E2;
+  --bg:#F4F6FA;
+  --white:#FFFFFF;
+  --border:#E2E8F0;
+  --border2:#CBD5E1;
+  --text:#1E293B;
+  --text2:#64748B;
+  --text3:#94A3B8;
+  --radius:8px;
+  --radius-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.04);
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+.mono{font-family:'DM Mono',monospace;}
+
+/* top nav */
+.nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1200px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--sky),var(--coral));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.nav-wordmark{font-size:14px;font-weight:600;color:var(--text);}
+.nav-badge{background:var(--sky-light);color:var(--sky-dark);font-size:10px;font-weight:500;padding:2px 8px;border-radius:100px;letter-spacing:.04em;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-author{font-size:12px;color:var(--text2);}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+
+/* page */
+.page{max-width:1200px;margin:0 auto;padding:2rem;}
+
+/* page header */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;gap:16px;flex-wrap:wrap;}
+.ph-left h1{font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.02em;}
+.ph-left p{font-size:13px;color:var(--text2);margin-top:4px;}
+.ph-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+/* mode toggle */
+.mode-toggle{display:flex;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.mode-btn{padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;background:none;border:none;color:var(--text2);transition:all .15s;}
+.mode-btn.active{background:var(--sky);color:var(--white);}
+
+/* api row */
+.api-row{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--shadow);}
+.api-row label{font-size:12px;font-weight:500;color:var(--text2);white-space:nowrap;}
+.api-input{flex:1;min-width:220px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text);outline:none;transition:border-color .15s;}
+.api-input:focus{border-color:var(--sky);}
+.api-input::placeholder{color:var(--text3);}
+.api-note{font-size:11px;color:var(--text3);}
+.run-btn{background:var(--sky);color:var(--white);border:none;border-radius:var(--radius);padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:background .15s;}
+.run-btn:hover{background:var(--sky-dark);}
+.run-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:1.5rem;}
+.metric{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow);}
+.metric-icon{width:32px;height:32px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:15px;}
+.metric-label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.metric-val{font-size:24px;font-weight:600;font-family:'DM Mono',monospace;color:var(--text);}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:3px;}
+
+/* table card */
+.tcard{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);}
+.tcard-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+.tcard-title{font-size:13px;font-weight:600;color:var(--text);}
+.tcard-actions{display:flex;gap:8px;}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:var(--radius);padding:5px 10px;font-size:11px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .1s;}
+.icon-btn:hover{background:var(--bg);border-color:var(--border2);}
+
+/* sort tabs */
+.sort-tabs{display:flex;gap:4px;padding:10px 18px;border-bottom:1px solid var(--border);background:var(--bg);}
+.sort-tab{padding:4px 10px;font-size:11px;font-weight:500;border-radius:6px;cursor:pointer;color:var(--text2);background:none;border:none;transition:all .1s;}
+.sort-tab.active{background:var(--white);color:var(--text);box-shadow:var(--shadow);}
+
+/* table */
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+colgroup col{}
+th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);padding:10px 18px;text-align:left;border-bottom:1px solid var(--border);background:var(--bg);}
+td{padding:0;border-bottom:1px solid var(--border);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+
+/* account row */
+.row-main{padding:13px 18px;display:flex;flex-direction:column;gap:0;}
+.acct-name{font-size:13px;font-weight:600;color:var(--text);}
+.acct-meta{font-size:11px;color:var(--text3);margin-top:1px;}
+.mrr-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--text);font-weight:500;}
+.mrr-change{font-size:10px;color:var(--text3);}
+.last-act{font-size:12px;color:var(--text2);}
+.bookings{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);}
+
+/* health */
+.hbar{display:flex;align-items:center;gap:8px;}
+.htrack{width:56px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0;}
+.hfill{height:100%;border-radius:2px;transition:width 1s ease;}
+.hscore{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:100px;font-size:10px;font-weight:600;letter-spacing:.04em;}
+.b-low{background:var(--green-light);color:#065F46;}
+.b-medium{background:var(--amber-light);color:#92400E;}
+.b-high{background:var(--red-light);color:#991B1B;}
+.b-critical{background:var(--red);color:var(--white);}
+
+/* signals */
+.signal-text{font-size:11px;color:var(--text2);line-height:1.5;padding:13px 18px;}
+.action-text{font-size:11px;color:var(--text);line-height:1.5;padding:13px 18px;}
+.expand-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--green);font-weight:500;margin-top:4px;}
+
+/* expandable playbook */
+.playbook-row{background:var(--sky-light);border-top:1px solid #B3E5FC;}
+.playbook-inner{padding:12px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.playbook-text{font-size:12px;color:#0277BD;line-height:1.6;flex:1;}
+.playbook-label{font-size:10px;font-weight:600;color:var(--sky-dark);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.copy-btn{flex-shrink:0;background:var(--white);border:1px solid #B3E5FC;border-radius:var(--radius);padding:5px 12px;font-size:11px;color:var(--sky-dark);cursor:pointer;white-space:nowrap;transition:all .1s;}
+.copy-btn:hover{background:var(--sky);color:var(--white);border-color:var(--sky);}
+.expand-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;display:flex;align-items:center;gap:3px;padding:13px 18px;width:100%;}
+.expand-btn:hover{color:var(--sky);}
+
+/* loading */
+.loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:3rem;color:var(--text2);font-size:13px;}
+.spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--sky);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* error */
+.err{background:#FEE2E2;border:1px solid #FECACA;border-radius:var(--radius);padding:12px 16px;font-size:12px;color:#991B1B;margin-bottom:1rem;}
+
+/* empty */
+.empty{text-align:center;padding:3rem;color:var(--text3);font-size:13px;}
+
+/* footer */
+.footer{margin-top:2rem;padding:1.5rem;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.footer-links{display:flex;gap:20px;}
+.footer-link{font-size:12px;color:var(--text2);text-decoration:none;display:flex;align-items:center;gap:4px;}
+.footer-link:hover{color:var(--sky);}
+.footer-built{font-size:11px;color:var(--text3);}
+
+/* demo banner */
+.demo-banner{background:linear-gradient(135deg,var(--coral-light),var(--sky-light));border:1px solid #FECBA1;border-radius:var(--radius);padding:10px 16px;font-size:12px;color:var(--text2);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.demo-dot{width:8px;height:8px;border-radius:50%;background:var(--coral);flex-shrink:0;}
+
+/* csv upload */
+.csv-drop{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:2rem;text-align:center;margin-bottom:1.5rem;cursor:pointer;transition:all .2s;background:var(--white);}
+.csv-drop:hover,.csv-drop.drag{border-color:var(--sky);background:var(--sky-light);}
+.csv-drop-icon{font-size:28px;margin-bottom:8px;}
+.csv-drop-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.csv-drop-sub{font-size:12px;color:var(--text2);}
+.csv-drop-sub a{color:var(--sky);cursor:pointer;text-decoration:underline;}
+.csv-badge{background:var(--green-light);color:#065F46;border-radius:var(--radius);padding:10px 16px;font-size:12px;margin-bottom:1.5rem;display:flex;align-items:center;gap:8px;}
+.csv-badge-icon{font-size:14px;}
+
+@media(max-width:900px){
+  .metrics{grid-template-columns:repeat(2,1fr);}
+  .page{padding:1rem;}
+}
+@media(max-width:600px){
+  .metrics{grid-template-columns:1fr 1fr;}
+  .nav{padding:0 1rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <div class="nav-icon">🐇</div>
+      <span class="nav-wordmark">Hopper RevOps</span>
+      <span class="nav-badge">INTERNAL TOOL</span>
+    </div>
+    <div class="nav-right">
+      <div class="nav-dot"></div>
+      <span class="nav-author">Built by Omokolade Sobande · omokoladesobande.com</span>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- page header -->
+  <div class="ph">
+    <div class="ph-left">
+      <h1>RevOps Signal Engine</h1>
+      <p id="subtitle">AI-powered account health · 10 accounts · demo mode</p>
+    </div>
+    <div class="ph-right">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="demoModeBtn" onclick="setMode('demo')">Demo mode</button>
+        <button class="mode-btn" id="liveModeBtn" onclick="setMode('live')">Live AI</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- demo banner -->
+  <div class="demo-banner" id="demoBanner">
+    <div class="demo-dot"></div>
+    Running with pre-computed AI analysis. Switch to Live AI mode with your Anthropic API key to analyze your own account data — or upload a CSV below.
+  </div>
+
+  <!-- csv uploaded success -->
+  <div class="csv-badge" id="csvBadge" style="display:none;">
+    <span class="csv-badge-icon">✓</span>
+    <span id="csvBadgeText">Custom data loaded — enter your API key above and click Analyze accounts.</span>
+  </div>
+
+  <!-- csv drop zone (shown in live mode) -->
+  <div class="csv-drop" id="csvDrop" style="display:none;" onclick="document.getElementById('csvFile').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+    <div class="csv-drop-icon">📂</div>
+    <div class="csv-drop-title">Upload your account data</div>
+    <div class="csv-drop-sub">Drop a CSV file here or click to browse · <a onclick="event.stopPropagation();downloadTemplate()">download template</a></div>
+  </div>
+  <input type="file" id="csvFile" accept=".csv" style="display:none;" onchange="handleFileUpload(this.files[0])">
+
+  <!-- api row (hidden in demo) -->
+  <div class="api-row" id="apiRow" style="display:none;">
+    <label>Anthropic API key</label>
+    <input class="api-input" type="password" id="apiKey" placeholder="sk-ant-api03-...">
+    <span class="api-note">Runs locally · never stored · direct to Anthropic</span>
+    <button class="run-btn" id="runBtn" onclick="runLive()">
+      <span>✦</span> Analyze accounts
+    </button>
+  </div>
+
+  <!-- error -->
+  <div id="errBanner" class="err" style="display:none;"></div>
+
+  <!-- metrics -->
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-icon" style="background:#E0F2FE;">✈️</div>
+      <div class="metric-label">Total MRR</div>
+      <div class="metric-val" id="mTmr">$89.4k</div>
+      <div class="metric-sub">10 active accounts</div>
+    </div>
+    <div class="metric">
+      <div class="metric-icon" style="background:#FEE2E2;">⚠️</div>
+      <div class="metric-label">At-risk MRR</div>
+      <div class="metric-val" id="mRisk" style="color:var(--red);">—</div>
+      <div class="metric-sub" id="mRiskNote">loading...</div>
+    </div>
+    <div class="metric">
+      <div class="metric-icon" style="background:#D1FAE5;">↑</div>
+      <div class="metric-label">Expansion signals</div>
+      <div class="metric-val" id="mExp" style="color:var(--green);">—</div>
+      <div class="metric-sub" id="mExpNote">loading...</div>
+    </div>
+    <div class="metric">
+      <div class="metric-icon" style="background:#FFF0ED;">🔴</div>
+      <div class="metric-label">Critical accounts</div>
+      <div class="metric-val" id="mCrit">—</div>
+      <div class="metric-sub" id="mCritNote">loading...</div>
+    </div>
+  </div>
+
+  <!-- table card -->
+  <div class="tcard">
+    <div class="tcard-header">
+      <span class="tcard-title">Account health dashboard</span>
+      <div class="tcard-actions">
+        <button class="icon-btn" onclick="exportCSV()">↓ Export CSV</button>
+        <button class="icon-btn" onclick="copyAll()">⧉ Copy all playbooks</button>
+      </div>
+    </div>
+    <div class="sort-tabs">
+      <button class="sort-tab active" onclick="sortBy('default',this)">All accounts</button>
+      <button class="sort-tab" onclick="sortBy('critical',this)">Critical first</button>
+      <button class="sort-tab" onclick="sortBy('expansion',this)">Expansion ready</button>
+      <button class="sort-tab" onclick="sortBy('health',this)">Health score</button>
+    </div>
+    <table>
+      <colgroup>
+        <col style="width:17%">
+        <col style="width:9%">
+        <col style="width:10%">
+        <col style="width:9%">
+        <col style="width:11%">
+        <col style="width:8%">
+        <col style="width:18%">
+        <col style="width:15%">
+        <col style="width:3%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th>MRR</th>
+          <th>Last active</th>
+          <th>Bookings</th>
+          <th>Health</th>
+          <th>Risk</th>
+          <th>Key signal</th>
+          <th>Action this week</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="loadingDiv" class="loading" style="display:none;">
+      <div class="spin"></div>
+      <span>Running AI analysis across all accounts...</span>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div class="footer">
+    <div class="footer-links">
+      <a class="footer-link" href="https://omokoladesobande.com" target="_blank">🌐 omokoladesobande.com</a>
+      <a class="footer-link" href="https://github.com/smartworkersai" target="_blank">⌥ github.com/smartworkersai</a>
+      <a class="footer-link" href="https://linkedin.com/in/omokolade-sobande" target="_blank">in LinkedIn</a>
+    </div>
+    <span class="footer-built">Built as a proof-of-concept for Hopper's RevOps team · Claude AI + Python automation</span>
+  </div>
+
+</div>
+
+<script>
+const ACCOUNTS=[
+  {id:1,name:"FlightDeals Pro",segment:"B2C Power User",mrr:3200,lastActive:"1 day ago",days:1,bookings:312,nps:88,tickets:0,plan:"Premium"},
+  {id:2,name:"TechCorp Travel",segment:"Enterprise",mrr:18500,lastActive:"3 days ago",days:3,bookings:89,nps:72,tickets:2,plan:"Business"},
+  {id:3,name:"WanderBudget",segment:"B2C Casual",mrr:890,lastActive:"52 days ago",days:52,bookings:4,nps:null,tickets:0,plan:"Free"},
+  {id:4,name:"GlobalLogistics Inc",segment:"Enterprise",mrr:22400,lastActive:"41 days ago",days:41,bookings:11,nps:29,tickets:14,plan:"Enterprise"},
+  {id:5,name:"SoloTraveller Club",segment:"B2C",mrr:4100,lastActive:"5 days ago",days:5,bookings:178,nps:81,tickets:1,plan:"Premium"},
+  {id:6,name:"HoneymoonHops",segment:"B2C",mrr:2800,lastActive:"2 days ago",days:2,bookings:67,nps:94,tickets:0,plan:"Premium"},
+  {id:7,name:"ConsultCo Travel",segment:"SMB",mrr:7600,lastActive:"16 days ago",days:16,bookings:31,nps:51,tickets:4,plan:"Business"},
+  {id:8,name:"BackpackerNetwork",segment:"B2C",mrr:1100,lastActive:"8 days ago",days:8,bookings:22,nps:66,tickets:1,plan:"Starter"},
+  {id:9,name:"LuxuryJets Ltd",segment:"Enterprise",mrr:19800,lastActive:"6 days ago",days:6,bookings:44,nps:78,tickets:3,plan:"Enterprise"},
+  {id:10,name:"FrequentFlyer Union",segment:"B2C Power User",mrr:9000,lastActive:"11 days ago",days:11,bookings:203,nps:83,tickets:0,plan:"Premium"}
+];
+
+const DEMO_RESULTS={
+  1:{health_score:91,risk:"low",signal:"Power user at peak engagement — 312 bookings",action:"Offer referral programme incentive",expansion:true,playbook:"Hi! Your booking volume puts you in our top 1% of users this quarter — we'd love to offer you early access to our new price-lock feature and a referral bonus for friends who sign up."},
+  2:{health_score:74,risk:"medium",signal:"Engagement dip despite strong MRR",action:"Schedule exec business review call",expansion:false,playbook:"Hi [name], we noticed your team's booking frequency has dipped slightly this month — happy to jump on a 20-minute call to make sure you're getting the most from your Business plan and walk you through any new features relevant to your team's travel patterns."},
+  3:{health_score:18,risk:"critical",signal:"52 days inactive, near-zero engagement",action:"Trigger win-back email sequence today",expansion:false,playbook:"We miss you on Hopper! Prices have dropped significantly on routes we know you've watched — here's your personalised alert with 3 deals we think you'll love."},
+  4:{health_score:12,risk:"critical",signal:"45+ days inactive, 14 open tickets, NPS 29",action:"Escalate to Customer Success Director",expansion:false,playbook:"Hi [name], I'm reaching out directly as your dedicated account manager — I can see you've had a frustrating experience recently and I want to personally resolve your open issues and restore confidence in the platform."},
+  5:{health_score:87,risk:"low",signal:"High-frequency booker, excellent NPS",action:"Introduce Premium loyalty perks",expansion:true,playbook:"You've booked 178 trips this quarter — you're one of our most active travellers. We'd love to upgrade your experience with early deal access, priority support, and our new trip concierge feature at no extra cost."},
+  6:{health_score:95,risk:"low",signal:"Near-perfect NPS 94, highly engaged",action:"Request case study or testimonial",expansion:true,playbook:"Your NPS score is one of the highest we've ever seen — would you be open to sharing your Hopper story for a feature on our blog? We'd love to celebrate how you've been using the app."},
+  7:{health_score:52,risk:"medium",signal:"Declining bookings, 4 unresolved tickets",action:"Resolve tickets before next outreach",expansion:false,playbook:"Hi [name], we've noticed a few open support items on your account — I'm following up personally to make sure everything gets resolved this week. Can we also jump on a quick call to make sure the platform is meeting your team's needs?"},
+  8:{health_score:61,risk:"medium",signal:"Moderate engagement, upgrade potential",action:"Trigger premium trial offer",expansion:true,playbook:"Based on your booking patterns, you'd save an average of £340/year on our Premium plan — want a free 30-day trial to see the difference?"},
+  9:{health_score:78,risk:"low",signal:"Strong MRR, solid NPS, minor ticket volume",action:"Upsell enterprise concierge tier",expansion:true,playbook:"Your account is performing well — we think you'd benefit from our Enterprise Concierge add-on, which includes a dedicated travel manager, 24/7 priority rebooking, and a quarterly travel spend report."},
+  10:{health_score:84,risk:"low",signal:"Power user cluster, high booking velocity",action:"Enrol in Ambassador programme",expansion:true,playbook:"Your community has driven serious booking volume through Hopper this quarter — we'd love to invite you to our Ambassador programme with exclusive perks and early access to new features."}
+};
+
+let results={...DEMO_RESULTS};
+let mode='demo';
+let expanded={};
+let currentSort='default';
+let currentAccounts=[...ACCOUNTS];
+let customLoaded=false;
+
+function setMode(m){
+  mode=m;
+  document.getElementById('demoModeBtn').className='mode-btn'+(m==='demo'?' active':'');
+  document.getElementById('liveModeBtn').className='mode-btn'+(m==='live'?' active':'');
+  document.getElementById('demoBanner').style.display=m==='demo'?'flex':'none';
+  document.getElementById('apiRow').style.display=m==='live'?'flex':'none';
+  document.getElementById('csvDrop').style.display=m==='live'?'block':'none';
+  document.getElementById('csvBadge').style.display=(m==='live'&&customLoaded)?'flex':'none';
+  if(m==='demo'){results={...DEMO_RESULTS};currentAccounts=[...ACCOUNTS];customLoaded=false;renderAll();}
+}
+
+function healthColor(s){
+  if(s>=80)return'var(--green)';
+  if(s>=60)return'var(--amber)';
+  if(s>=35)return'var(--coral)';
+  return'var(--red)';
+}
+
+function getSortedAccounts(){
+  let list=[...currentAccounts];
+  if(currentSort==='critical')list.sort((a,b)=>{
+    const ra=results[a.id];const rb=results[b.id];
+    const order={critical:0,high:1,medium:2,low:3};
+    return(ra?order[ra.risk]??4:4)-(rb?order[rb.risk]??4:4);
+  });
+  else if(currentSort==='expansion')list=list.filter(a=>results[a.id]?.expansion);
+  else if(currentSort==='health')list.sort((a,b)=>(results[b.id]?.health_score??0)-(results[a.id]?.health_score??0));
+  return list;
+}
+
+function sortBy(s,btn){
+  currentSort=s;
+  document.querySelectorAll('.sort-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function toggleExpand(id){
+  expanded[id]=!expanded[id];
+  renderAll();
+}
+
+function renderAll(){
+  updateMetrics();
+  const tb=document.getElementById('tbody');
+  tb.innerHTML='';
+  const list=getSortedAccounts();
+  if(!list.length){
+    tb.innerHTML='<tr><td colspan="9" class="empty">No accounts match this filter.</td></tr>';
+    return;
+  }
+  list.forEach(acc=>{
+    const r=results[acc.id];
+    const isExp=expanded[acc.id]&&r;
+    // main row
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><div class="row-main"><div class="acct-name">${acc.name}</div><div class="acct-meta">${acc.segment} · ${acc.plan}</div></div></td>
+      <td><div class="row-main"><div class="mrr-val">$${(acc.mrr/1000).toFixed(1)}k</div><div class="mrr-change">/mo</div></div></td>
+      <td><div class="row-main"><div class="last-act">${acc.lastActive}</div></div></td>
+      <td><div class="row-main"><div class="bookings">${acc.bookings}<span style="font-size:10px;color:var(--text3);">/mo</span></div></div></td>
+      <td><div class="row-main">${r?`<div class="hbar"><div class="htrack"><div class="hfill" style="width:${r.health_score}%;background:${healthColor(r.health_score)};"></div></div><span class="hscore" style="color:${healthColor(r.health_score)};">${r.health_score}</span></div>`:'<span style="color:var(--text3);font-size:12px;">pending</span>'}</div></td>
+      <td><div class="row-main">${r?`<span class="badge b-${r.risk}">${r.risk}</span>`:'—'}</div></td>
+      <td class="signal-text">${r?r.signal:'<span style="color:var(--text3);">run analysis</span>'}</td>
+      <td class="action-text">${r?`${r.action}${r.expansion?'<div class="expand-tag">↑ expansion ready</div>':''}`:'—'}</td>
+      <td><button class="expand-btn" onclick="toggleExpand(${acc.id})">${r?(isExp?'▴':'▾'):''}</button></td>
+    `;
+    tb.appendChild(tr);
+    // playbook row
+    if(isExp&&r){
+      const pr=document.createElement('tr');
+      pr.innerHTML=`
+        <td colspan="9" class="playbook-row">
+          <div class="playbook-inner">
+            <div>
+              <div class="playbook-label">Playbook — copy-pasteable outreach</div>
+              <div class="playbook-text">${r.playbook}</div>
+            </div>
+            <button class="copy-btn" onclick="copyPlaybook(${acc.id})">Copy message</button>
+          </div>
+        </td>
+      `;
+      tb.appendChild(pr);
+    }
+  });
+}
+
+function updateMetrics(){
+  const list=Object.values(results);
+  const totalMrr=currentAccounts.reduce((s,a)=>s+a.mrr,0);
+  document.getElementById('mTmr').textContent='$'+(totalMrr/1000).toFixed(1)+'k';
+  if(!list.length)return;
+  const atRisk=currentAccounts.filter(a=>{const r=results[a.id];return r&&(r.risk==='high'||r.risk==='critical');});
+  const atRiskMrr=atRisk.reduce((s,a)=>s+a.mrr,0);
+  const expCount=list.filter(r=>r.expansion).length;
+  const critCount=list.filter(r=>r.risk==='critical').length;
+  document.getElementById('mRisk').textContent=atRiskMrr?'$'+(atRiskMrr/1000).toFixed(1)+'k':'$0';
+  document.getElementById('mRiskNote').textContent=atRisk.length+' account'+(atRisk.length!==1?'s':'')+' flagged';
+  document.getElementById('mExp').textContent=expCount;
+  document.getElementById('mExpNote').textContent=expCount+' ready for upsell';
+  document.getElementById('mCrit').textContent=critCount;
+  document.getElementById('mCritNote').textContent=critCount?critCount+' need immediate action':'all accounts stable';
+}
+
+function copyPlaybook(id){
+  const r=results[id];const acc=currentAccounts.find(a=>a.id===id);
+  if(!r)return;
+  navigator.clipboard.writeText(r.playbook).catch(()=>{});
+  event.target.textContent='Copied!';
+  const btn=event.target;setTimeout(()=>{btn.textContent='Copy message';},1500);
+}
+
+function copyAll(){
+  const texts=currentAccounts.filter(a=>results[a.id]).map(a=>`[${a.name}]\n${results[a.id].playbook}`).join('\n\n---\n\n');
+  navigator.clipboard.writeText(texts).catch(()=>{});
+  const btn=event.target;btn.textContent='✓ Copied!';setTimeout(()=>{btn.textContent='⧉ Copy all playbooks';},2000);
+}
+
+function exportCSV(){
+  const rows=[['Account','Segment','MRR','Last Active','Health Score','Risk','Signal','Action','Expansion']];
+  currentAccounts.forEach(a=>{
+    const r=results[a.id]||{};
+    rows.push([a.name,a.segment||'','$'+a.mrr,a.lastActive||'',r.health_score??'',r.risk??'',r.signal??'',r.action??'',r.expansion?'Yes':'No']);
+  });
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='revops-signals.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadTemplate(){
+  const csv=`name,segment,mrr,days_inactive,bookings_per_month,nps,open_tickets,plan
+FlightDeals Pro,B2C Power User,3200,1,312,88,0,Premium
+TechCorp Travel,Enterprise,18500,3,89,72,2,Business
+WanderBudget,B2C Casual,890,52,4,,0,Free
+GlobalLogistics Inc,Enterprise,22400,41,11,29,14,Enterprise`;
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='revops-template.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('csvDrop').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file&&file.name.endsWith('.csv'))handleFileUpload(file);
+}
+
+function handleFileUpload(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=e.target.result;
+    parseCSV(text,file.name);
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text,filename){
+  const lines=text.trim().split('\n').filter(l=>l.trim());
+  if(lines.length<2){alert('CSV must have a header row and at least one data row.');return;}
+  const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase().replace(/\s+/g,'_'));
+  const col=n=>headers.indexOf(n);
+  const get=(row,n)=>{const i=col(n);return i>=0?(row[i]||'').replace(/"/g,'').trim():'';};
+  const parsed=[];
+  for(let i=1;i<lines.length;i++){
+    const row=lines[i].match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$|^(?=,))/g)||lines[i].split(',');
+    const name=get(row,'name')||get(row,'account')||get(row,'account_name')||'Account '+(i);
+    const mrr=parseFloat((get(row,'mrr')||get(row,'monthly_recurring_revenue')||'0').replace(/[$,]/g,''))||0;
+    const days=parseInt(get(row,'days_inactive')||get(row,'days')||'0')||0;
+    const bookings=parseInt(get(row,'bookings_per_month')||get(row,'bookings')||get(row,'monthly_bookings')||'0')||0;
+    const npsRaw=get(row,'nps')||get(row,'net_promoter_score')||'';
+    const nps=npsRaw?parseFloat(npsRaw):null;
+    const tickets=parseInt(get(row,'open_tickets')||get(row,'tickets')||'0')||0;
+    const segment=get(row,'segment')||get(row,'type')||'Account';
+    const plan=get(row,'plan')||get(row,'tier')||'Standard';
+    const daysLabel=days===0?'Today':days===1?'1 day ago':days+' days ago';
+    parsed.push({id:i,name,segment,mrr,lastActive:daysLabel,days,bookings,nps,tickets,plan});
+  }
+  if(!parsed.length){alert('No valid rows found in CSV.');return;}
+  currentAccounts=parsed;
+  results={};
+  expanded={};
+  customLoaded=true;
+  document.getElementById('csvBadge').style.display='flex';
+  document.getElementById('csvBadgeText').textContent=parsed.length+' accounts loaded from '+filename+' — enter your API key above and click Analyze accounts.';
+  document.getElementById('csvDrop').style.display='none';
+  document.getElementById('subtitle').textContent='AI-powered account health · '+parsed.length+' accounts · awaiting analysis';
+  renderAll();
+}
+
+async function runLive(){
+  const key=document.getElementById('apiKey').value.trim();
+  if(!key){document.getElementById('errBanner').textContent='Enter your Anthropic API key to run live analysis.';document.getElementById('errBanner').style.display='block';return;}
+  const btn=document.getElementById('runBtn');
+  btn.disabled=true;btn.innerHTML='<div class="spin" style="border-top-color:#fff"></div> Analyzing...';
+  document.getElementById('loadingDiv').style.display='flex';
+  document.getElementById('errBanner').style.display='none';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:2000,
+        system:'You are a RevOps analyst. Return ONLY a valid JSON array. No markdown. No preamble. No explanation.',
+        messages:[{role:'user',content:`Analyze these travel platform accounts. For each account return: id (integer), health_score (0-100 integer), risk (exactly: low/medium/high/critical), signal (max 9 words), action (imperative verb phrase max 9 words), expansion (boolean), playbook (1-2 sentences, copy-pasteable outreach message in first person).
+
+Rules: 45+ days inactive = critical. 8+ open tickets = high. NPS under 35 = high. High bookings + NPS 80+ + 0 tickets = expansion. Return ONLY the JSON array.
+
+${JSON.stringify(currentAccounts.map(a=>({id:a.id,name:a.name,segment:a.segment,mrr:a.mrr,daysInactive:a.days,monthlyBookings:a.bookings,nps:a.nps,openTickets:a.tickets,plan:a.plan})))}`}]
+      })
+    });
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.status);}
+    const data=await resp.json();
+    const txt=(data.content&&data.content[0]&&data.content[0].text)||'';
+    const clean=txt.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    results={};parsed.forEach(r=>{results[r.id]=r;});
+    const now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('subtitle').textContent='AI-powered account health · '+currentAccounts.length+' accounts · live run at '+now;
+    renderAll();
+    btn.innerHTML='<span>↻</span> Re-analyze';
+  }catch(e){
+    document.getElementById('errBanner').textContent='Analysis failed: '+(e.message||'check API key')+'. Try again.';
+    document.getElementById('errBanner').style.display='block';
+    btn.innerHTML='<span>✦</span> Analyze accounts';
+  }finally{
+    btn.disabled=false;
+    document.getElementById('loadingDiv').style.display='none';
+  }
+}
+
+// init
+renderAll();
+</script>
+</body>
+</html>
